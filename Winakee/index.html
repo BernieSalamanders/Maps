@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
 <style>
+html, body, #map {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
 .boundary {
   fill: none;
@@ -16,10 +23,11 @@
 }
 
 #property {
-  fill: #aaa;
+  fill: #ccc;
+  cursor: pointer;
 }
 
-#property .active {
+#property.active {
   fill: orange;
 }
 
@@ -32,17 +40,25 @@
   pointer-events: none;
 }
 
+.mesh {
+  fill: none;
+  stroke: #fff;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script>
 
-var width = 700,
+var width = 1000,
     height = 800,
-	centered;
+	active = d3.select(null);
 	
 var color = d3.scale.category20();
+
 var projection = d3.geo.mercator()
     .center([-73.861544,41.913874 ])
     .scale(80000)
@@ -59,47 +75,65 @@ svg.append("rect")
 	.attr("class", "background")
 	.attr('width', width)
 	.attr('height', height)
-	.on("click", clicked);
+	.on("click", reset);
 	
-var g = svg.append("g");
+var g = svg.append("g")
+    .style("stroke-width", "1.5px");
 	
 d3.json("winnakee_v3.json", function(error, winnakee) {
   if (error) return console.error(error);
   console.log(winnakee);
 	
-	svg.selectAll(".winnakee.objects.winnakee_shape_to_geojson")
-		.data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
-		.enter().append("path")
-		.attr("id", "property")
-		.attr("class", function(d) { return d.properties.sitename; })
-		.attr("d", path)
-		.on("click", clicked);
+   g.selectAll("path")
+      .data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
+    .enter().append("path")
+    .attr("id", "property")
+      .attr("d", path)
+      .attr("class", function(d) { return d.properties.sitename; })
+      .on("click", clicked);
+
+  g.append("path")
+      .datum(topojson.mesh(winnakee, winnakee.objects.winnakee_shape_to_geojson, function(a, b) { return a !== b; }))
+      .attr("class", "mesh")
+      .attr("d", path);   
+    
+	// svg.selectAll(".winnakee.objects.winnakee_shape_to_geojson")
+	// 	.data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
+	// 	.enter().append("path")
+	// 	.attr("id", "property")
+	// 	.attr("class", function(d) { return d.properties.sitename; })
+	// 	.attr("d", path)
+	// 	.on("click", clicked);
 
 });
 
 function clicked(d) {
-  var x, y, k;
+  if (active.node() === this) return reset();
+  active.classed("active", false);
+  active = d3.select(this).classed("active", true);
 
-  if (d && centered !== d) {
-    var centroid = path.centroid(d);
-    x = centroid[0];
-    y = centroid[1];
-    k = 4;
-    centered = d;
-  } else {
-    x = width / 2;
-    y = height / 2;
-    k = 1;
-    centered = null;
-  }
-
-  g.selectAll("path")
-      .classed("active", centered && function(d) { return d === centered; });
+  var bounds = path.bounds(d),
+      dx = bounds[1][0] - bounds[0][0],
+      dy = bounds[1][1] - bounds[0][1],
+      x = (bounds[0][0] + bounds[1][0]) / 2,
+      y = (bounds[0][1] + bounds[1][1]) / 2,
+      scale = .9 / Math.max(dx / width, dy / height),
+      translate = [width / 2 - scale * x, height / 2 - scale * y];
 
   g.transition()
       .duration(750)
-      .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")scale(" + k + ")translate(" + -x + "," + -y + ")")
-      .style("stroke-width", 1.5 / k + "px");
+      .style("stroke-width", 1.5 / scale + "px")
+      .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+}
+
+function reset() {
+  active.classed("active", false);
+  active = d3.select(null);
+
+  g.transition()
+      .duration(750)
+      .style("stroke-width", "1.5px")
+      .attr("transform", "");
 }
 	
 </script>

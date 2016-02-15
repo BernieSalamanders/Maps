@@ -1,43 +1,30 @@
 <!DOCTYPE html>
+<head>
+<title>Winnakee D3</title>
 <meta charset="utf-8">
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no"/>
-<style>
-html, body, #map {
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-}
 
-.boundary {
-  fill: none;
-  stroke: #fff;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
+<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+
+</head>
+<style>
+
+
 
 .background {
   fill: none;
   pointer-events: all;
+  
 }
 
 #property {
-  fill: #ccc;
+  fill: green;
   cursor: pointer;
 }
 
 #property.active {
   fill: orange;
-}
-
-#property-borders {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 1.5px;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  pointer-events: none;
 }
 
 .mesh {
@@ -49,14 +36,20 @@ html, body, #map {
 
 </style>
 <body>
-<script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
-<script src="//d3js.org/topojson.v1.min.js"></script>
 <script>
 
 var width = 1000,
     height = 800,
 	active = d3.select(null);
 	
+var tooltip = d3.select("body")
+	.append("div")
+	.style("position", "absolute")
+	.style("z-index", "10")
+	.style("visibility", "hidden")
+	.text("a simple tooltip");
+    
+    
 var color = d3.scale.category20();
 
 var projection = d3.geo.mercator()
@@ -86,17 +79,38 @@ d3.json("winnakee_v3.json", function(error, winnakee) {
 	
    g.selectAll("path")
       .data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
-    .enter().append("path")
+    .enter()
+    .append("path")
     .attr("id", "property")
       .attr("d", path)
       .attr("class", function(d) { return d.properties.sitename; })
-      .on("click", clicked);
+      .on("click", clicked)
+      	.on("mouseover", function(d){return tooltip.style("visibility", "visible");})
+	.on("mousemove", function(d){return tooltip.style("top", (d3.event.pageY-10)+"px").style("left",(d3.event.pageX+10)+"px");})
+	.on("mouseout", function(d){return tooltip.style("visibility", "hidden");});
+;
 
   g.append("path")
       .datum(topojson.mesh(winnakee, winnakee.objects.winnakee_shape_to_geojson, function(a, b) { return a !== b; }))
       .attr("class", "mesh")
       .attr("d", path);   
+      
+  g.selectAll("text")
+      .data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
+    .enter()
+    .append("svg:text")
+    .text(function(d) { return d.properties.sitename; })
+    .attr("x", function(d){
+        return path.centroid(d)[0];
+    })
+    .attr("y", function(d){
+        return  path.centroid(d)[1];
+    })
+    .attr("text-anchor","middle")
     
+    //.each(getSize)
+    //.style("font-size", function(d) { return d.scale + "px"; })
+    // .attr('font-size','6pt');  
 	// svg.selectAll(".winnakee.objects.winnakee_shape_to_geojson")
 	// 	.data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
 	// 	.enter().append("path")
@@ -104,8 +118,17 @@ d3.json("winnakee_v3.json", function(error, winnakee) {
 	// 	.attr("class", function(d) { return d.properties.sitename; })
 	// 	.attr("d", path)
 	// 	.on("click", clicked);
+    .style("font-size", "1px");
 
 });
+
+
+// function getSize(d) {
+//   var bbox = this.getBBox(),
+//       cbbox = this.parentNode.getBBox(),
+//       scale = Math.min(cbbox.width/bbox.width, cbbox.height/bbox.height);
+//   d.scale = scale;
+// }
 
 function clicked(d) {
   if (active.node() === this) return reset();

@@ -58,7 +58,7 @@ var zoom = d3.behavior.zoom()
     .scaleExtent([1, 8])
     .on("zoom",zoomed);
 
-svg.call(zoom);
+//svg.call(zoom);
 
 svg.append("rect")
 	.attr("class", "background")
@@ -156,6 +156,8 @@ function clicked(d) {
       .duration(750)
       .style("stroke-width", 1.5 / scale + "px")
       .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+    
+    
 }
 
 function reset() {

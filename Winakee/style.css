@@ -25,7 +25,7 @@
 
 
 #parcel {
-  fill: green;
+  fill: #296519;
   cursor: pointer;
   position: absolute;
 }
@@ -36,6 +36,8 @@
 
 #place {
     fill: lightgoldenrodyellow;
+    stroke: grey;
+    stroke-width: 0.2px;
 }
 
 #parcel.active {
@@ -43,10 +45,14 @@
   stroke: none;
 }
 
-/*#parcel.hover {
-    stroke-width: 0.1px;
-    stroke: yellow;
+/*#parcel:hover {
+    stroke-width: 1px;
+    stroke: orangered;
 }*/
+
+#parcel.active:hover {
+    stroke: none;
+}
 
 .mesh {
   fill: none;

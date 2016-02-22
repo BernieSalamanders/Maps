@@ -12,24 +12,24 @@
 <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
+<body>   
     
-    <h3>D3 Mapping Test</h3>
+<h3>D3 Mapping Test - Winnakee Land Trust</h3>
+<img src="MNarrow.png" 
+       style="position: absolute; 
+              left: 450px; 
+              top:50px;
+              z-index: 2;
+              height: auto; 
+              width: auto; 
+              max-width: 60px; 
+              max-height: 60px; 
+       " />   
 <script>
-
 
 var width = 480;
     height = 840;
-	active = d3.select(null);
-	
-    
-// var tooltip = d3.select("body")
-// 	.append("div")
-// 	.style("position", "absolute")
-// 	.style("z-index", "10")
-// 	.style("visibility", "hidden")
-// 	.text("Winakee Parcel");
-    
+	active = d3.select(null);    
  
 var tip = d3.tip()
   .attr('class', 'd3-tip')
@@ -48,13 +48,9 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path()
 	.projection(projection);
 
-
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
-
-// var features = svg.append("g")
-//     .attr("class","features");
     
 svg.call(tip);
 
@@ -84,71 +80,63 @@ var g = svg.append("g")
 
 //function makeMyMap(error,winnakee,geodata)	{
 function makeMyMap(error,winnakee)	{
-// d3.json("winnakee_v3.json", function(error, winnakee) {
-//   if (error) return console.error(error);
-//   console.log(winnakee);
-	
-//        g.append("image")
-//   .attr("xlink:href", "sat.jpg")
-//   .attr({ width: width ,height: height })
-//   .attr("class", "bg");  
-   // debugger
-   g.selectAll("path")
-      .data(topojson.feature(winnakee, winnakee.objects.collection).features) //generate features from TopoJSON
-      .enter()
-      .append("path")
-      .attr("id", function(d) { return d.properties.Type; })
-      .attr("d", path)
-      .attr("class", function(d) { return d.properties.name; })
-      .on("click", clicked)
-      .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
-	  .on("mouseover", function(d) { tip.show(d, document.getElementById("head")) })
-      .on("mouseout", tip.hide);
 
-
-//   g.append("path")
-//       .datum(topojson.mesh(winnakee, winnakee, winnakee.objects.collection, function(a, b) { return a !== b; }))
-//       .attr("class", "mesh")
-//       .attr("d", path);   
-
-    //   features.selectAll("path")
-    // .data(topojson.feature(geodata,geodata.objects.collection).features) //generate features from TopoJSON
-    // .enter()
-    // .append("path")
-    // .attr("id", "hudson")
-    // .attr("d",path);   
-  g.selectAll("text")
-    .data(topojson.feature(winnakee, winnakee.objects.collection).features)
-    .enter()
-    .append("svg:text")
-    .text(function(d) { if (d.properties.Type === 'place') {return d.properties.Name;} })
-    .attr("x", function(d){
-        return path.centroid(d)[0];
-    })
-    .attr("y", function(d){
-        return  path.centroid(d)[1];
-    })
-    .attr("text-anchor","middle")
-    .style("font-size", "10px");
+    g.selectAll("path")
+        .data(topojson.feature(winnakee, winnakee.objects.collection).features) //generate features from TopoJSON
+        .enter()
+        .append("path")
+        .attr("id", function(d) { return d.properties.Type; })
+        .attr("d", path)
+        .attr("class", function(d) { return d.properties.name; })
+        .on("click", clicked)
+      //  .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
+        .on("mouseover", function(d) { if (d.properties.Type === 'parcel') {tip.show(d, document.getElementById("head")) }})
+        .on("mouseout", tip.hide);
+        
+        
+    //remove click events from non parcels    
+    g.selectAll("path#lake")
+    .on("click", null);
+    
+        g.selectAll("path#River")
+    .on("click", null);
+    
+        g.selectAll("path#place")
+    .on("click", null);
+    
+    g.selectAll("text")
+        .data(topojson.feature(winnakee, winnakee.objects.collection).features)
+        .enter()
+        .append("svg:text")
+        .text(function(d) { if (d.properties.Type === 'place') {return d.properties.Name;} })
+        .attr("x", function(d){
+            return path.centroid(d)[0]+15;
+        })
+        .attr("y", function(d){
+            return  path.centroid(d)[1];
+        })
+        .attr("text-anchor","middle")
+        .style("font-size", "10px");
 
 };
 
-// d3.json("hudson.json",function(error,geodata) {
-//   if (error) return console.log(error); //unknown error, check the console
-
-//   //Create a path for each map feature in the data
-//   features.selectAll("path")
-//     .data(topojson.feature(geodata,geodata.objects.collection).features) //generate features from TopoJSON
-//     .enter()
-//     .append("path")
-//     .attr("d",path)
-//     .on("click", clicked);
-
-// });
 //Update map on zoom/pan
 function zoomed() {
-  g.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+    var t = d3.event.translate,
+    s = d3.event.scale;
+    t[0] = Math.min(width / 2 * (s - 1), Math.max(width / 2 * (1 - s), t[0]));
+    t[1] = Math.min(height / 2 * (s - 1), Math.max(width / 2 * (1 - s), t[1]));
+    
+    g.attr("transform", "translate(" + zoom.translate(t) + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+    
+    // var t = d3.event.translate,
+    // s = d3.event.scale;
+    // t[0] = Math.min(width / 2 * (s - 1), Math.max(width / 2 * (1 - s), t[0]));
+    // t[1] = Math.min(height / 2 * (s - 1), Math.max(width / 2 * (1 - s), t[1]));
+    // g.attr("transform", "translate(" + zoom.translate(t) + ")scale(" + zoom.scale() + ")")
+    // .selectAll("path").style("stroke-width", 1 / s).attr("transform", "translate(" + t + ")scale(" + zoom.scale() + ")")  
+
 }
 
 function clicked(d) {
@@ -180,6 +168,4 @@ function reset() {
       .attr("transform", "");
 }
 
-
-	
 </script>

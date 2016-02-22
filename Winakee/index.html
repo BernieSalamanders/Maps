@@ -8,7 +8,7 @@
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
 <script src="d3tip.js"></script>
-<script src="http://cdn.leafletjs.com/leaflet-0.6.1/leaflet.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -18,10 +18,11 @@
 <script>
 
 
-var width = ($(window).width()*.90)-27;
-    height = $(window).height()*.90;
+var width = 480;
+    height = 840;
 	active = d3.select(null);
 	
+    
 // var tooltip = d3.select("body")
 // 	.append("div")
 // 	.style("position", "absolute")
@@ -34,78 +35,121 @@ var tip = d3.tip()
   .attr('class', 'd3-tip')
   .offset([-10, 0])
   .html(function(d) {
-    return d.properties.sitename;
+    return d.properties.Name;
   }); 
     
-var color = d3.scale.category20();
+// var color = d3.scale.category20();
 
 var projection = d3.geo.mercator()
-    .center([-73.861544,41.913874 ])
-    .scale(80000)
-    .translate([width / 2, height / 2])
+    .center([-73.89,41.884])
+    .scale(82000)
+    .translate([width / 2, height / 2]);
 	
 var path = d3.geo.path()
 	.projection(projection);
+
 
 var svg = d3.select("body").append("svg")
     .attr("width", width)
     .attr("height", height);
 
+// var features = svg.append("g")
+//     .attr("class","features");
+    
 svg.call(tip);
 
+var zoom = d3.behavior.zoom()
+    .scaleExtent([1, 8])
+    .on("zoom",zoomed);
+
+svg.call(zoom);
 
 svg.append("rect")
 	.attr("class", "background")
 	.attr('width', width)
 	.attr('height', height)
+    //seems to be effecting the other click zoom 
 	.on("click", reset);
     
 	
 var g = svg.append("g")
     .style("stroke-width", "1.5px");
-	
-d3.json("winnakee_v3.json", function(error, winnakee) {
-  if (error) return console.error(error);
-  console.log(winnakee);
-	
-       g.append("image")
-  .attr("xlink:href", "sat.jpg")
-  .attr({ width: width ,height: height })
-  .attr("class", "bg");  
     
+    //asynchronous loading
+    queue()
+    .defer(d3.json,'w_poly_project.json')
+	//.defer(d3.json, 'winnakee_v3.json')
+	//.defer(d3.json, 'hudson.json')
+	.await(makeMyMap);
+
+//function makeMyMap(error,winnakee,geodata)	{
+function makeMyMap(error,winnakee)	{
+// d3.json("winnakee_v3.json", function(error, winnakee) {
+//   if (error) return console.error(error);
+//   console.log(winnakee);
+	
+//        g.append("image")
+//   .attr("xlink:href", "sat.jpg")
+//   .attr({ width: width ,height: height })
+//   .attr("class", "bg");  
+   // debugger
    g.selectAll("path")
-      .data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
+      .data(topojson.feature(winnakee, winnakee.objects.collection).features) //generate features from TopoJSON
       .enter()
       .append("path")
-      .attr("id", "property")
+      .attr("id", function(d) { return d.properties.Type; })
       .attr("d", path)
-      .attr("class", function(d) { return d.properties.sitename; })
+      .attr("class", function(d) { return d.properties.name; })
       .on("click", clicked)
       .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
 	  .on("mouseover", function(d) { tip.show(d, document.getElementById("head")) })
       .on("mouseout", tip.hide);
-;
 
-  g.append("path")
-      .datum(topojson.mesh(winnakee, winnakee.objects.winnakee_shape_to_geojson, function(a, b) { return a !== b; }))
-      .attr("class", "mesh")
-      .attr("d", path);   
-       
-//   g.selectAll("text")
-//     .data(topojson.feature(winnakee, winnakee.objects.winnakee_shape_to_geojson).features)
+
+//   g.append("path")
+//       .datum(topojson.mesh(winnakee, winnakee, winnakee.objects.collection, function(a, b) { return a !== b; }))
+//       .attr("class", "mesh")
+//       .attr("d", path);   
+
+    //   features.selectAll("path")
+    // .data(topojson.feature(geodata,geodata.objects.collection).features) //generate features from TopoJSON
+    // .enter()
+    // .append("path")
+    // .attr("id", "hudson")
+    // .attr("d",path);   
+  g.selectAll("text")
+    .data(topojson.feature(winnakee, winnakee.objects.collection).features)
+    .enter()
+    .append("svg:text")
+    .text(function(d) { if (d.properties.Type === 'place') {return d.properties.Name;} })
+    .attr("x", function(d){
+        return path.centroid(d)[0];
+    })
+    .attr("y", function(d){
+        return  path.centroid(d)[1];
+    })
+    .attr("text-anchor","middle")
+    .style("font-size", "10px");
+
+};
+
+// d3.json("hudson.json",function(error,geodata) {
+//   if (error) return console.log(error); //unknown error, check the console
+
+//   //Create a path for each map feature in the data
+//   features.selectAll("path")
+//     .data(topojson.feature(geodata,geodata.objects.collection).features) //generate features from TopoJSON
 //     .enter()
-//     .append("svg:text")
-//     .text(function(d) { return d.properties.sitename; })
-//     .attr("x", function(d){
-//         return path.centroid(d)[0];
-//     })
-//     .attr("y", function(d){
-//         return  path.centroid(d)[1];
-//     })
-//     .attr("text-anchor","middle")
-//     .style("font-size", "1px");
+//     .append("path")
+//     .attr("d",path)
+//     .on("click", clicked);
 
-});
+// });
+//Update map on zoom/pan
+function zoomed() {
+  g.attr("transform", "translate(" + zoom.translate() + ")scale(" + zoom.scale() + ")")
+      .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
+}
 
 function clicked(d) {
   if (active.node() === this) return reset();
@@ -135,5 +179,7 @@ function reset() {
       .style("stroke-width", "1.5px")
       .attr("transform", "");
 }
+
+
 	
 </script>

@@ -17,23 +17,45 @@
 }
 
 .background {
-  fill: none;
+  fill: lightgreen;
   pointer-events: all;
   
 }
 
-#property {
-  fill: red;
+
+
+#parcel {
+  fill: green;
   cursor: pointer;
+  position: absolute;
 }
 
-#property.active {
-  fill: orange;
+#River,#lake {
+    fill: dodgerblue;
 }
+
+#place {
+    fill: lightgoldenrodyellow;
+}
+
+#parcel.active {
+  fill: olivedrab;
+  stroke: none;
+}
+
+/*#parcel.hover {
+    stroke-width: 0.1px;
+    stroke: yellow;
+}*/
 
 .mesh {
   fill: none;
-  stroke: #fff;
+  stroke-width: 0.1px;
+  stroke: black;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+body {
+  font: 12px sans-serif;
 }

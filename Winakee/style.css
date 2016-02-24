@@ -17,7 +17,7 @@
 }
 
 .background {
-  fill: lightgreen;
+  fill: lightgray;
   pointer-events: all;
   
 }
@@ -26,18 +26,23 @@
 
 #parcel {
   fill: #296519;
+      stroke-width:10px;
+    stroke-opacity:0.1;
+        stroke: green;
   cursor: pointer;
   position: absolute;
 }
 
 #River,#lake {
     fill: dodgerblue;
+    stroke: none !important;
 }
 
 #place {
     fill: lightgoldenrodyellow;
-    stroke: grey;
-    stroke-width: 0.2px;
+    stroke: grey !important;
+    stroke-width: 0.2px !important;
+    
 }
 
 #parcel.active {
@@ -56,8 +61,8 @@
 
 .mesh {
   fill: none;
-  stroke-width: 0.1px;
-  stroke: black;
+  stroke-width: 0.1px !important;
+  stroke: black !important;
   stroke-linecap: round;
   stroke-linejoin: round;
 }

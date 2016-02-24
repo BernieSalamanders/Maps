@@ -89,6 +89,7 @@ function makeMyMap(error,winnakee)	{
         .attr("d", path)
         .attr("class", function(d) { return d.properties.name; })
         .on("click", clicked)
+        
       //  .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
         .on("mouseover", function(d) { if (d.properties.Type === 'parcel') {tip.show(d, document.getElementById("head")) }})
         .on("mouseout", tip.hide);
@@ -130,6 +131,7 @@ function zoomed() {
     g.attr("transform", "translate(" + zoom.translate(t) + ")scale(" + zoom.scale() + ")")
       .selectAll("path").style("stroke-width", 1 / zoom.scale() + "px" );
     
+    
     // var t = d3.event.translate,
     // s = d3.event.scale;
     // t[0] = Math.min(width / 2 * (s - 1), Math.max(width / 2 * (1 - s), t[0]));
@@ -140,7 +142,15 @@ function zoomed() {
 }
 
 function clicked(d) {
-  if (active.node() === this) return reset();
+ 
+    g.selectAll("path")
+          .transition()
+      .duration(2000)
+    .style("stroke-width", "1");
+ 
+  if (active.node() === this){
+
+   return reset();}
   active.classed("active", false);
   active = d3.select(this).classed("active", true);
 
@@ -153,21 +163,26 @@ function clicked(d) {
       translate = [width / 2 - scale * x, height / 2 - scale * y];
 
   g.transition()
-      .duration(750)
-      .style("stroke-width", 1.5 / scale + "px")
+      .duration(2000)
+      .style("stroke-width", 1 / scale + "px")
       .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-    
-    
+  
 }
 
 function reset() {
   active.classed("active", false);
   active = d3.select(null);
-
+      g.selectAll("path")
+      .transition()
+      .duration(1000)
+      .style("stroke-width", "10")
+      .style("stroke", "green");
   g.transition()
       .duration(750)
-      .style("stroke-width", "1.5px")
+     // .style("stroke-width", "1.5px")
       .attr("transform", "");
+      
+
 }
 
 </script>

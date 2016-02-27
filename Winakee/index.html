@@ -9,23 +9,29 @@
 <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
 <script src="d3tip.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
+<script src="knockout-3.4.0.js"></script>
 <link rel="stylesheet" href="style.css">
 </head>
+     
+<h3>D3 Mapping Test - Winnakee Land Trust - 2/26/2016 - Robert Sellers</h3>
+<div id="divMain">
+<img id = "northarrow" src="MNarrow.png" />   
+<div id = "map"></div>
+<div id = "info">
+    <select data-bind="options: parcels"></select>
+</div>
+</div>
 
-<body>   
-    
-<h3>D3 Mapping Test - Winnakee Land Trust</h3>
-<img src="MNarrow.png" 
-       style="position: absolute; 
-              left: 450px; 
-              top:50px;
-              z-index: 2;
-              height: auto; 
-              width: auto; 
-              max-width: 60px; 
-              max-height: 60px; 
-       " />   
 <script>
+    
+    
+$(document).ready(function(){
+function viewModel() {
+
+//KNOCKOUT OBSERVABLES
+  this.parcels = ko.observableArray([]);
+//KNOCKOUT OBSERVABLES
+
 
 var width = 480;
     height = 840;
@@ -48,7 +54,7 @@ var projection = d3.geo.mercator()
 var path = d3.geo.path()
 	.projection(projection);
 
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#map").append("svg")
     .attr("width", width)
     .attr("height", height);
     
@@ -80,30 +86,35 @@ var g = svg.append("g")
 
 //function makeMyMap(error,winnakee,geodata)	{
 function makeMyMap(error,winnakee)	{
-
+    
+    var parcelList = [];
+    
     g.selectAll("path")
         .data(topojson.feature(winnakee, winnakee.objects.collection).features) //generate features from TopoJSON
         .enter()
         .append("path")
         .attr("id", function(d) { return d.properties.Type; })
         .attr("d", path)
-        .attr("class", function(d) { return d.properties.name; })
+        .attr("class", function(d) {
+            if (d.properties.Type === 'parcel'){
+                //populates parcelsArray
+                parcelList.push(d.properties.Name)}; 
+                parcels(parcelList);
+                return d.properties.name; 
+            })
         .on("click", clicked)
-        
-      //  .on("mouseover", function(d){return tooltip.style("visibility", "visible");})
         .on("mouseover", function(d) { if (d.properties.Type === 'parcel') {tip.show(d, document.getElementById("head")) }})
         .on("mouseout", tip.hide);
-        
-        
+       
     //remove click events from non parcels    
-    g.selectAll("path#lake")
-    .on("click", null);
+        g.selectAll("path#lake")
+        .on("click", null);
     
         g.selectAll("path#River")
-    .on("click", null);
+        .on("click", null);
     
         g.selectAll("path#place")
-    .on("click", null);
+        .on("click", null);
     
     g.selectAll("text")
         .data(topojson.feature(winnakee, winnakee.objects.collection).features)
@@ -118,6 +129,12 @@ function makeMyMap(error,winnakee)	{
         })
         .attr("text-anchor","middle")
         .style("font-size", "10px");
+
+        //knockout loading zone
+        
+    // g.selectAll("path")
+    //     .data(topojson.feature(winnakee, winnakee.objects.collection).features) //generate features from TopoJSON
+    //     .attr(function(d) {debugger; return d;});
 
 };
 
@@ -167,22 +184,27 @@ function clicked(d) {
       .style("stroke-width", 1 / scale + "px")
       .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
   
-}
+    }
 
-function reset() {
-  active.classed("active", false);
-  active = d3.select(null);
-      g.selectAll("path")
-      .transition()
-      .duration(1000)
-      .style("stroke-width", "10")
-      .style("stroke", "green");
-  g.transition()
-      .duration(750)
-     // .style("stroke-width", "1.5px")
-      .attr("transform", "");
+    function reset() {
+    active.classed("active", false);
+    active = d3.select(null);
+        g.selectAll("path")
+        .transition()
+        .duration(1000)
+        .style("stroke-width", "10")
+        .style("stroke", "green");
+    g.transition()
+        .duration(750)
+        // .style("stroke-width", "1.5px")
+        .attr("transform", "");
       
 
-}
+    }
+    
+  };
 
+  ko.applyBindings(viewModel, document.getElementById('#info'))
+
+});
 </script>

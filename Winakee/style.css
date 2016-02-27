@@ -22,7 +22,18 @@
   
 }
 
-
+#northarrow {
+    
+    position: absolute; 
+              left: 450px; 
+              top:50px;
+              z-index: 2;
+              height: auto; 
+              width: auto; 
+              max-width: 60px; 
+              max-height: 60px; 
+    
+}
 
 #parcel {
   fill: #296519;
@@ -67,6 +78,11 @@
   stroke-linejoin: round;
 }
 
-body {
-  font: 12px sans-serif;
+
+#map{
+    float: left;
+}
+
+#info{
+    width: 100%;
 }

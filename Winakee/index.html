@@ -8,15 +8,15 @@
 <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
 <script src="http://code.jquery.com/jquery-1.11.0.min.js" type="text/javascript"></script>
-<script src="d3tip.js"></script>
+<script src="extensions/d3tip.js"></script>
 <script src="http://d3js.org/queue.v1.min.js"></script>
-<script src="knockout-3.4.0.js"></script>
+<script src="extensions/knockout-3.4.0.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.6.0/underscore.js" type="text/javascript"></script>
 <link rel="stylesheet" href="style.css">
 </head>
 
 
-<img id = "northarrow" src="MNarrow.png" />   
+<img id = "northarrow" src="img/MNarrow.png" />   
 <td><div id = "map"></div></td>
 <div id = "info">
 <select 
@@ -28,11 +28,9 @@
 </div>
 <!-- ko if: information -->
 <a data-bind='text: information'></a> 
-<td>
 <!-- ko if: detailsURL -->
 <div id="details" data-bind="html: detailsURL"></div>
 <!-- /ko -->
-<td>
 <!-- /ko -->
 
 
@@ -142,7 +140,7 @@ $(document).ready(function()
                         
                         //asynchronous loading
                         queue()
-                        .defer(d3.json,'w_poly_project.json')
+                        .defer(d3.json,'json/w_poly_project.json')
                         //.defer(d3.json, 'winnakee_v3.json')
                         //.defer(d3.json, 'hudson.json')
                         .await(makeMyMap);
